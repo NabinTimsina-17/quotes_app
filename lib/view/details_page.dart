@@ -61,7 +61,7 @@ class DetailsPage extends StatelessWidget {
   /// Function to return an image path based on the category.
   String _getCategoryImage(String category) {
     switch (category.toLowerCase()) {
-      case 'inspiration':
+      case 'Inspirational':
         return 'assets/images/background_1.jpeg';
       case 'life':
         return 'assets/images/background_2.jpeg';

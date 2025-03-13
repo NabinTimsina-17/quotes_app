@@ -1,15 +1,20 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+// import 'package:gallery_saver/gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:saver_gallery/saver_gallery.dart';
 import 'package:screenshot/screenshot.dart';
-import 'dart:io';
 
 class QuoteCard extends StatefulWidget {
   final String quote;
   final String backgroundImage;
 
-  const QuoteCard({super.key, required this.quote, required this.backgroundImage});
+  const QuoteCard({
+    super.key,
+    required this.quote,
+    required this.backgroundImage,
+  });
 
   @override
   _QuoteCardState createState() => _QuoteCardState();
@@ -18,7 +23,6 @@ class QuoteCard extends StatefulWidget {
 class _QuoteCardState extends State<QuoteCard> {
   final ScreenshotController _screenshotController = ScreenshotController();
 
-  /// Copies the quote text to clipboard.
   Future<void> _copyToClipboard(BuildContext context) async {
     await Clipboard.setData(ClipboardData(text: widget.quote));
     ScaffoldMessenger.of(context).showSnackBar(
@@ -26,28 +30,28 @@ class _QuoteCardState extends State<QuoteCard> {
     );
   }
 
-  /// Captures the card as an image and saves it to the gallery.
-  Future<void> _downloadQuoteAsImage(BuildContext context, dynamic GallerySaver) async {
+  Future<void> _downloadQuoteAsImage(BuildContext context) async {
     try {
-      // Capture the widget as an image
-      Uint8List? capturedImage = await _screenshotController.capture();
+      final Uint8List? capturedImage = await _screenshotController.capture();
+      if (capturedImage == null) return;
 
-      if (capturedImage != null) {
-        // Save the image to a temporary directory
-        final directory = await getApplicationDocumentsDirectory();
-        final imagePath = '${directory.path}/quote_${DateTime.now().millisecondsSinceEpoch}.png';
-        final imageFile = File(imagePath);
-        await imageFile.writeAsBytes(capturedImage);
+      final tempDir = await getTemporaryDirectory();
+      final path =
+          '${tempDir.path}/quote_${DateTime.now().millisecondsSinceEpoch}.png';
+      
+      final File imageFile = File(path);
+      await imageFile.writeAsBytes(capturedImage);
 
-        // Save the image to the gallery
-        await GallerySaver.saveImage(imageFile.path);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Quote saved to gallery!")),
-        );
-      }
-    } catch (e) {
+      // await GallerySaver.saveImage(path, albumName: 'Quotes App');
+
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Failed to save quote as image.")),
+        const SnackBar(content: Text("Quote saved to gallery!")),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Failed to save quote")),
       );
     }
   }
@@ -72,6 +76,10 @@ class _QuoteCardState extends State<QuoteCard> {
                 width: double.infinity,
                 height: 200,
                 fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: Colors.grey[200],
+                  child: const Icon(Icons.broken_image),
+                ),
               ),
             ),
             // Gradient Overlay
@@ -111,7 +119,7 @@ class _QuoteCardState extends State<QuoteCard> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.download, color: Colors.white),
-                    onPressed: () => _downloadQuoteAsImage(context, SaverGallery),
+                    onPressed: () => _downloadQuoteAsImage(context),
                   ),
                   IconButton(
                     icon: const Icon(Icons.copy, color: Colors.white),

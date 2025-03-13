@@ -88,12 +88,11 @@ class _HomePageState extends State<HomePage> {
                         final item = filteredItems[index];
                         return GestureDetector(
                           onTap: () {
-                            // Navigate to the details page with the category title
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) =>
-                                   const QuoteCard(backgroundImage: '', quote: '',),
+                                    DetailsPage(category: item.title),
                               ),
                             );
                           },
@@ -105,8 +104,7 @@ class _HomePageState extends State<HomePage> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(item.icon,
-                                    size: 40, color: Colors.white),
+                                Icon(item.icon, size: 40, color: Colors.white),
                                 const SizedBox(height: 10),
                                 Text(
                                   item.title,
@@ -129,3 +127,4 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+  
